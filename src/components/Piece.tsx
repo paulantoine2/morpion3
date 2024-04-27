@@ -28,7 +28,9 @@ export function Piece({
     : undefined;
   return (
     <div
-      className={`aspect-square flex items-center justify-center`}
+      className={`aspect-square flex items-center justify-center ${
+        disabled ? "cursor-default" : "cursor-grab"
+      }`}
       ref={setNodeRef}
       style={{ ...style, width: 30 + size * 3 }}
       {...listeners}
