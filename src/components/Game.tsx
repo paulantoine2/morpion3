@@ -1,8 +1,10 @@
 import { DndContext } from "@dnd-kit/core";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { Board, PlayerColor, Stocks } from "../types";
 import { Square } from "./Square";
 import { Player } from "./Player";
+import supabase from "../lib/supabase";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const INITIAL_STOCK = {
   1: true,
@@ -17,6 +19,8 @@ const INITIAL_STOCK = {
 };
 
 export default function Game() {
+  const channel = useRef<RealtimeChannel>();
+
   const [board, setBoard] = useState<Board>(
     Array(9).fill({ player: null, size: 0 })
   );
@@ -26,6 +30,51 @@ export default function Game() {
     orange: { ...INITIAL_STOCK },
     blue: { ...INITIAL_STOCK },
   });
+
+  const handlePlay = useCallback(
+    ({
+      player,
+      size,
+      index,
+    }: {
+      player: PlayerColor;
+      size: number;
+      index: number;
+    }) => {
+      if (size <= board[index].size) return;
+      const boardCopy = [...board];
+      boardCopy[index] = { player, size, id: index };
+      setBoard(boardCopy);
+
+      const stocksCopy = { ...stocks };
+      stocksCopy[player][size] = false;
+      setStocks(stocksCopy);
+
+      setIsPlaying((prev) => (prev === "orange" ? "blue" : "orange"));
+
+      channel.current?.send({
+        type: "broadcast",
+        event: "game_state",
+        payload: { board: boardCopy, stocks: stocksCopy },
+      });
+    },
+    [board, stocks]
+  );
+
+  useEffect(() => {
+    channel.current = supabase
+      .channel("game")
+      .on("broadcast", { event: "game_state" }, ({ payload }) => {
+        setBoard(payload.board);
+        setStocks(payload.stocks);
+        setIsPlaying((prev) => (prev === "orange" ? "blue" : "orange"));
+      })
+      .subscribe();
+
+    return () => {
+      if (channel.current) supabase.removeChannel(channel.current);
+    };
+  }, []);
 
   const renderSquare = (i: number) => (
     <Square id={i} player={board[i].player} size={board[i].size} />
@@ -41,21 +90,25 @@ export default function Game() {
     <DndContext
       onDragEnd={(event) => {
         if (event.over) {
-          const player: PlayerColor = event.active.data.current?.player;
-          const size: number = event.active.data.current?.size;
-          if (size <= board[+event.over.id].size) return;
-          const boardCopy = [...board];
-          boardCopy[+event.over.id] = { player, size, id: +event.over.id };
-          setBoard(boardCopy);
-
-          const stocksCopy = { ...stocks };
-          stocksCopy[player][size] = false;
-          setStocks(stocksCopy);
-
-          setIsPlaying((prev) => (prev === "orange" ? "blue" : "orange"));
+          handlePlay({
+            player: event.active.data.current?.player,
+            size: event.active.data.current?.size,
+            index: +event.over.id,
+          });
         }
       }}
     >
+      <button
+        onClick={() =>
+          supabase.channel("game").send({
+            type: "broadcast",
+            event: "test",
+            payload: { hello: "BONJOUR" },
+          })
+        }
+      >
+        CLICK
+      </button>
       <div className="flex flex-col items-center justify-between h-full py-10">
         <Player
           stock={stocks.orange}
