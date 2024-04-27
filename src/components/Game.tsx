@@ -18,13 +18,15 @@ const INITIAL_STOCK = {
   9: true,
 };
 
-export default function Game() {
+export default function Game({ self }: { self: PlayerColor }) {
   const channel = useRef<RealtimeChannel>();
+
+  const otherPlayer = self === "orange" ? "blue" : "orange";
 
   const [board, setBoard] = useState<Board>(
     Array(9).fill({ player: null, size: 0 })
   );
-  const [isPlaying, setIsPlaying] = useState<PlayerColor>("orange");
+  const [isPlaying, setIsPlaying] = useState<PlayerColor>("blue");
 
   const [stocks, setStocks] = useState<Stocks>({
     orange: { ...INITIAL_STOCK },
@@ -98,41 +100,29 @@ export default function Game() {
         }
       }}
     >
-      <button
-        onClick={() =>
-          supabase.channel("game").send({
-            type: "broadcast",
-            event: "test",
-            payload: { hello: "BONJOUR" },
-          })
-        }
-      >
-        CLICK
-      </button>
       <div className="flex flex-col items-center justify-between h-full py-10">
         <Player
-          stock={stocks.orange}
-          isPlaying={isPlaying === "orange"}
-          color="orange"
+          stock={stocks[otherPlayer]}
+          isPlaying={isPlaying === otherPlayer}
+          color={otherPlayer}
+          isOtherPlayer={true}
         />
-
         <div className="grid grid-cols-3 grid-rows-3 gap-2 w-[316px]">
           {renderSquare(0)}
           {renderSquare(1)}
           {renderSquare(2)}
-
           {renderSquare(3)}
           {renderSquare(4)}
           {renderSquare(5)}
-
           {renderSquare(6)}
           {renderSquare(7)}
           {renderSquare(8)}
         </div>
         <Player
-          stock={stocks.blue}
-          isPlaying={isPlaying === "blue"}
-          color="blue"
+          stock={stocks[self]}
+          isPlaying={isPlaying === self}
+          color={self}
+          isOtherPlayer={false}
         />
       </div>
     </DndContext>

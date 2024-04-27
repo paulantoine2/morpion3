@@ -13,7 +13,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       </nav>
 
       <div className="flex-1 flex items-center justify-center">
-        <Game />
+        <Game self="blue" />
       </div>
     </div>
   </React.StrictMode>

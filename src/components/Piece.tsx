@@ -28,18 +28,19 @@ export function Piece({
     : undefined;
   return (
     <div
-      className="w-[100px] aspect-square flex items-center justify-center "
+      className={`aspect-square flex items-center justify-center`}
       ref={setNodeRef}
-      style={style}
+      style={{ ...style, width: 30 + size * 3 }}
       {...listeners}
       {...attributes}
     >
       <img
         key={size}
         src={`/${player}.svg`}
-        style={{
-          transform: `scale(${(+size + 5) / 15})`,
-        }}
+
+        // style={{
+        //   transform: `scale(${(+size + 5) / 15})`,
+        // }}
       />
     </div>
   );
