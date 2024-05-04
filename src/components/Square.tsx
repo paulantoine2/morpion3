@@ -15,7 +15,7 @@ export function Square({ player, size, id }: Square) {
 
   return (
     <div
-      className="bg-slate-700 aspect-square rounded-lg flex items-center justify-center"
+      className="bg-slate-800 aspect-square rounded-lg flex items-center justify-center"
       ref={setNodeRef}
       style={style}
     >

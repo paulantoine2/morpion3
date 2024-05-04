@@ -6,25 +6,17 @@ export function Player({
   isPlaying,
   color,
   isOtherPlayer,
-}: Player & { isOtherPlayer: boolean }) {
-  const colorVariants = {
-    orange: "from-orange-400 to-orange-500",
-    blue: "from-blue-400 to-blue-500",
-  };
+  nickname,
+}: Player & { isOtherPlayer: boolean; nickname: string }) {
   return (
     <div
-      className={`${!isPlaying && "opacity-50"} ${
-        !isOtherPlayer && "bg-slate-800"
-      } p-5 rounded-lg`}
+      className={`${!isPlaying && "opacity-50"} items-center flex ${
+        isOtherPlayer ? "flex-col-reverse" : "flex-col"
+      }`}
     >
-      <div className="flex items-center gap-3">
-        <div
-          className={`${colorVariants[color]} w-10 h-10 bg-gradient-to-t rounded-full`}
-        ></div>
-        <div className="font-medium uppercase">{color}</div>
-      </div>
+      <div className="font-medium uppercase">{nickname}</div>
 
-      <div className={`w-[469px] flex items-center gap-2`}>
+      <div className={`flex items-center gap-2`}>
         {Object.entries(stock).map(([size, available]) => (
           <Piece
             key={size}
