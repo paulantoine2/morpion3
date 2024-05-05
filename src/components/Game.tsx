@@ -27,6 +27,7 @@ type Player = {
   nickname: string;
   ready: boolean;
   user_id: string;
+  play_first: boolean;
 };
 
 const user_id = window.crypto.randomUUID();
@@ -44,6 +45,8 @@ export default function Game({ id }: { id: string }) {
   const [board, setBoard] = useState<Board>(
     Array(9).fill({ player: null, size: 0 })
   );
+
+  console.log(isPlaying);
 
   const selfPlayer =
     bluePlayer && bluePlayer.user_id === user_id
@@ -64,7 +67,10 @@ export default function Game({ id }: { id: string }) {
       opponentPlayer.ready
     ) {
       setTimeout(
-        () => setIsPlaying(Math.random() > 0.5 ? "blue" : "orange"),
+        () =>
+          setIsPlaying(
+            selfPlayer.play_first ? selfPlayer.color : opponentPlayer.color
+          ),
         1000
       );
     }
@@ -103,6 +109,7 @@ export default function Game({ id }: { id: string }) {
               nickname: localStorage.getItem("nickname") || "unknown",
               color: isFirstPlayerJoining ? "orange" : "blue",
               ready: false,
+              play_first: isFirstPlayerJoining,
             });
           }
 
@@ -228,6 +235,10 @@ export default function Game({ id }: { id: string }) {
               color={opponentPlayer.color}
               isOtherPlayer={true}
               nickname={opponentPlayer.nickname}
+              onCountdownEnd={() => {
+                console.log("countdown end");
+                setIsPlaying((prev) => (prev === "blue" ? "orange" : "blue"));
+              }}
             />
           )}
           <div className="grid grid-cols-3 grid-rows-3 gap-2 w-[316px]">
@@ -248,6 +259,10 @@ export default function Game({ id }: { id: string }) {
               color={selfPlayer.color}
               isOtherPlayer={false}
               nickname={selfPlayer.nickname}
+              onCountdownEnd={() => {
+                console.log("countdown end");
+                setIsPlaying((prev) => (prev === "blue" ? "orange" : "blue"));
+              }}
             />
           )}
         </div>
